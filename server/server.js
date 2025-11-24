@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDB = require('./config/db');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
@@ -10,10 +11,10 @@ connectDB();
 // Init Middleware
 app.use(cors());
 app.use(express.json({ extended: false }));
-app.use(express.static('../public'));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req, res) => {
-  res.redirect('/inicio.html');
+  res.sendFile(path.join(__dirname, '..', 'public', 'inicio.html'));
 });
 
 // Define Routes
