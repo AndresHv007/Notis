@@ -4,10 +4,23 @@
   "description": "A simple note-taking app",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js",
-    "heroku-postbuild": "cd server && npm install"
+    "start": "node server/server.js"
   },
   "engines": {
     "node": "18.x"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^7.0.0",
+    "mongoose": "^9.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^10.1.0",
+    "nodemon": "^3.1.11"
   }
 }
