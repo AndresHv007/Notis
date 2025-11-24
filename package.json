@@ -1,0 +1,13 @@
+{
+  "name": "notis",
+  "version": "1.0.0",
+  "description": "A simple note-taking app",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "heroku-postbuild": "cd server && npm install"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
