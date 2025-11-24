@@ -4,7 +4,8 @@
   "description": "A simple note-taking app",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "seed": "node server/scripts/seed.js"
   },
   "engines": {
     "node": "18.x"
