@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <title>Mis Notas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="nota.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+</head>
+
+<body>
+  <div class="container">
+    <h2 class="title">Mis Notas</h2>
+
+    <div class="note-box">
+      <div class="note-header">
+        <a id="back-btn" href="inicio.html"><button class="btn volver"><i class="fas fa-arrow-left"></i> Volver</button></a>
+        <a id="save-note-btn" href="#"><button class="btn guardar">Guardar Nota</button></a>
+      </div>
+
+      <form id="notaForm">
+        <div class="form-group full">
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" placeholder="Titulo de la nota" required>
+        </div>
+
+        <div class="form-group full">
+          <label for="etiquetas">Etiquetas</label>
+          <div class="tags-container">
+          </div>
+          <input type="text" id="etiquetas" placeholder="Agregar etiqueta...">
+        </div>
+
+        <div class="form-group full">
+          <label for="contenido">Contenido</label>
+          <textarea id="contenido" rows="5"
+            placeholder="Escribe el contenido aqui..."></textarea>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="nota.js"></script>
+</body>
+
+</html>

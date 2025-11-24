@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>REGISTRO</title>
+  <link rel="stylesheet" href="registro.css">
+  <meta charset="utf-8">
+</head>
+
+<body>
+  <div class="container">
+    <div class="title">Registro</div>
+    <form id="registro-form">
+      <div class="form-group">
+        <span>Nombre</span>
+        <input type="text" id="name" placeholder="Ingrese su nombre" required>
+      </div>
+      <div class="form-group">
+        <span>Usuario</span>
+        <input type="text" id="username" placeholder="Ingrese un usuario" required>
+      </div>
+      <div class="form-group">
+        <span>Email</span>
+        <input type="email" id="email" placeholder="Ingrese su email" required>
+      </div>
+      <div class="form-group">
+        <span>Telefono</span>
+        <input type="number" id="phone" placeholder="Ingrese telefono" required>
+      </div>
+      <div class="form-group">
+        <span>Contraseña</span>
+        <input type="password" id="password" placeholder="Ingrese contraseña" required id="password" name="password" minlength="6"
+          pattern="[A-Za-z0-9]+"
+          title="La contraseña debe tener al menos 6 caracteres y solo puede contener letras y números">
+      </div>
+      <div class="form-group">
+        <span>Confirmar Contraseña</span>
+        <input type="password" id="confirm-password" placeholder="Confirme contraseña" required>
+      </div>
+      <div class="button">
+        <input type="submit" value="Registrarse">
+      </div>
+    </form>
+
+  </div>
+  </div>
+  <script src="registro.js"></script>
+</body>
+
+</html>
