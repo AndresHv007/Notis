@@ -5,7 +5,9 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "seed": "node server/scripts/seed.js"
+    "build": "npm install",
+    "seed": "node server/scripts/seed.js",
+    "seed-test-user": "node server/scripts/seed-test-user.js"
   },
   "engines": {
     "node": "18.x"

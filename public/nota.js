@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const titleInput = document.getElementById('titulo');
-  const tagsInput = document.getElementById('etiquetas');
+  const tagInput = document.getElementById('etiqueta');
   const contentInput = document.getElementById('contenido');
   const saveBtn = document.getElementById('save-note-btn');
   const backBtn = document.getElementById('back-btn');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then((res) => res.json())
       .then((note) => {
         titleInput.value = note.title;
-        tagsInput.value = note.tags.join(', ');
+        tagInput.value = note.tag ? note.tag.name : '';
         contentInput.value = note.content;
       });
   }
@@ -31,9 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
   saveBtn.addEventListener('click', async (e) => {
     e.preventDefault();
 
+    const tag = tagInput.value.trim();
+    if (tag.includes(' ') || tag.includes(',')) {
+      alert('Only one tag is allowed, and it cannot contain spaces or commas.');
+      return;
+    }
+
     const noteData = {
       title: titleInput.value,
-      tags: tagsInput.value.split(',').map((tag) => tag.trim()),
+      tag: tag,
       content: contentInput.value,
     };
 

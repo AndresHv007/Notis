@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         renderNotes(data.notes);
         renderPagination(data.totalPages, data.currentPage);
-        notesInfo.textContent = `${data.totalNotes} notes • Page ${data.currentPage} of ${data.totalPages}`;
+        notesInfo.textContent = `${data.totalNotes} notes • Page ${data.totalNotes === 0 ? 0 : data.currentPage} of ${data.totalPages}`;
       } else {
         console.error('Failed to fetch notes');
       }
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const noteCard = `
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex mb-4">
           <div class="note-card w-100">
-            <span class="note-badge">${note.tags.join(', ') || 'General'}</span>
+            <span class="note-badge">${note.tag ? note.tag.name : 'General'}</span>
             <div class="note-card-body text-center">
               <h5 class="note-title">${note.title}</h5>
               <p class="note-text">${note.content}</p>
@@ -96,21 +96,23 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', async (e) => {
         e.preventDefault();
         const noteId = e.target.closest('.delete-btn').dataset.id;
-        try {
-          const res = await fetch(`/api/notes/${noteId}`, {
-            method: 'DELETE',
-            headers: {
-              'x-auth-token': token,
-            },
-          });
+        if (confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
+          try {
+            const res = await fetch(`/api/notes/${noteId}`, {
+              method: 'DELETE',
+              headers: {
+                'x-auth-token': token,
+              },
+            });
 
-          if (res.ok) {
-            fetchNotes(currentPage);
-          } else {
-            console.error('Failed to delete note');
+            if (res.ok) {
+              fetchNotes(currentPage);
+            } else {
+              console.error('Failed to delete note');
+            }
+          } catch (err) {
+            console.error(err);
           }
-        } catch (err) {
-          console.error(err);
         }
       });
     });

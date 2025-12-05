@@ -1,4 +1,5 @@
 const Note = require('../models/Note');
+const Tag = require('../models/Tag');
 
 exports.getNotes = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -7,6 +8,7 @@ exports.getNotes = async (req, res) => {
 
   try {
     const notes = await Note.find({ user: req.user.id })
+      .populate('tag')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -27,17 +29,28 @@ exports.getNotes = async (req, res) => {
 };
 
 exports.createNote = async (req, res) => {
-  const { title, content, tags } = req.body;
+  const { title, content, tag } = req.body;
 
   try {
+    let tagId = null;
+    if (tag) {
+      let tagDoc = await Tag.findOne({ name: tag, user: req.user.id });
+      if (!tagDoc) {
+        tagDoc = new Tag({ name: tag, user: req.user.id });
+        await tagDoc.save();
+      }
+      tagId = tagDoc._id;
+    }
+
     const newNote = new Note({
       title,
       content,
-      tags,
+      tag: tagId,
       user: req.user.id,
     });
 
     const note = await newNote.save();
+    await note.populate('tag');
     res.json(note);
   } catch (err) {
     console.error(err.message);
@@ -47,7 +60,7 @@ exports.createNote = async (req, res) => {
 
 exports.getNoteById = async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
+    const note = await Note.findById(req.params.id).populate('tag');
 
     if (!note) {
       return res.status(404).json({ msg: 'Note not found' });
@@ -69,15 +82,23 @@ exports.getNoteById = async (req, res) => {
 };
 
 exports.updateNote = async (req, res) => {
-  const { title, content, tags } = req.body;
+  const { title, content, tag } = req.body;
 
   // Build note object
   const noteFields = {};
   if (title) noteFields.title = title;
   if (content) noteFields.content = content;
-  if (tags) noteFields.tags = tags;
 
   try {
+    if (tag) {
+      let tagDoc = await Tag.findOne({ name: tag, user: req.user.id });
+      if (!tagDoc) {
+        tagDoc = new Tag({ name: tag, user: req.user.id });
+        await tagDoc.save();
+      }
+      noteFields.tag = tagDoc._id;
+    }
+
     let note = await Note.findById(req.params.id);
 
     if (!note) return res.status(404).json({ msg: 'Note not found' });
@@ -91,7 +112,7 @@ exports.updateNote = async (req, res) => {
       req.params.id,
       { $set: noteFields },
       { new: true }
-    );
+    ).populate('tag');
 
     res.json(note);
   } catch (err) {
@@ -121,16 +142,27 @@ exports.searchNotes = async (req, res) => {
 
   try {
     const query = req.query.q;
+    const orConditions = [
+      { title: { $regex: query, $options: 'i' } },
+      { content: { $regex: query, $options: 'i' } },
+    ];
+
+    if (query.toLowerCase().trim() === 'general') {
+      orConditions.push({ tag: null });
+    } else {
+      const tag = await Tag.findOne({ user: req.user.id, name: { $regex: query, $options: 'i' } });
+      if (tag) {
+        orConditions.push({ tag: tag._id });
+      }
+    }
+
     const searchCriteria = {
       user: req.user.id,
-      $or: [
-        { title: { $regex: query, $options: 'i' } },
-        { content: { $regex: query, $options: 'i' } },
-        { tags: { $regex: query, $options: 'i' } },
-      ],
+      $or: orConditions,
     };
 
     const notes = await Note.find(searchCriteria)
+      .populate('tag')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -151,71 +183,39 @@ exports.searchNotes = async (req, res) => {
 };
 
 exports.getTodaysNotes = async (req, res) => {
-
   const page = parseInt(req.query.page) || 1;
-
   const limit = parseInt(req.query.limit) || 4;
-
   const skip = (page - 1) * limit;
 
-
-
   try {
-
     const start = new Date();
-
-    start.setHours(0, 0, 0, 0);
-
-
-
     const end = new Date();
-
+    start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
 
-
-
     const searchCriteria = {
-
       user: req.user.id,
-
       createdAt: { $gte: start, $lt: end },
-
     };
 
-
-
     const notes = await Note.find(searchCriteria)
-
+      .populate('tag')
       .sort({ createdAt: -1 })
-
       .skip(skip)
-
       .limit(limit);
 
-
-
     const totalNotes = await Note.countDocuments(searchCriteria);
-
     const totalPages = Math.ceil(totalNotes / limit);
 
-
-
     res.json({
-
       notes,
-
       totalNotes,
-
       totalPages,
-
       currentPage: page,
-
     });
 
   } catch (err) {
-
     console.error(err.message);
-
     res.status(500).send('Server Error');
   }
 };
@@ -223,15 +223,14 @@ exports.getTodaysNotes = async (req, res) => {
 exports.getTodaysAllNotes = async (req, res) => {
   try {
     const start = new Date();
-    start.setHours(0, 0, 0, 0);
-
     const end = new Date();
+    start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
 
     const notes = await Note.find({
       user: req.user.id,
       createdAt: { $gte: start, $lt: end },
-    }).sort({ createdAt: -1 });
+    }).populate('tag').sort({ createdAt: -1 });
     res.json(notes);
   } catch (err) {
     console.error(err.message);
@@ -242,14 +241,26 @@ exports.getTodaysAllNotes = async (req, res) => {
 exports.searchAllNotes = async (req, res) => {
   try {
     const query = req.query.q;
-    const notes = await Note.find({
+    const orConditions = [
+      { title: { $regex: query, $options: 'i' } },
+      { content: { $regex: query, $options: 'i' } },
+    ];
+
+    if (query.toLowerCase().trim() === 'general') {
+      orConditions.push({ tag: null });
+    } else {
+      const tag = await Tag.findOne({ user: req.user.id, name: { $regex: query, $options: 'i' } });
+      if (tag) {
+        orConditions.push({ tag: tag._id });
+      }
+    }
+
+    const searchCriteria = {
       user: req.user.id,
-      $or: [
-        { title: { $regex: query, $options: 'i' } },
-        { content: { $regex: query, $options: 'i' } },
-        { tags: { $regex: query, $options: 'i' } },
-      ],
-    }).sort({ createdAt: -1 });
+      $or: orConditions,
+    };
+
+    const notes = await Note.find(searchCriteria).populate('tag').sort({ createdAt: -1 });
     res.json(notes);
   } catch (err) {
     console.error(err.message);
@@ -259,10 +270,10 @@ exports.searchAllNotes = async (req, res) => {
 
 exports.getAllNotes = async (req, res) => {
   try {
-    const notes = await Note.find({ user: req.user.id }).sort({ createdAt: -1 });
+    const notes = await Note.find({ user: req.user.id }).populate('tag').sort({ createdAt: -1 });
     res.json(notes);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send('Server. Error');
   }
 };
