@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: notis-backend
+    env: node
+    plan: free
+    buildCommand: 'npm install'
+    startCommand: 'npm start'
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+    nodeVersion: '20.19.0'

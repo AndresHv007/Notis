@@ -10,7 +10,7 @@
     "seed-test-user": "node server/scripts/seed-test-user.js"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=20.19.0"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
